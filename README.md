@@ -29,7 +29,9 @@
 2.	Таблицы
 
 transactions (id, amount, currency, card, client_id, place_id)
+
 clients (inn, first_name, last_name, middle_name)
+
 places (id, place)
 
 Для использования пакетной вставки для id не используется автогенерация, кроме таблицы places, где используется SEQUENCE
