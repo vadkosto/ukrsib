@@ -18,13 +18,9 @@
 
 2.	Таблицы
 
-transactions			clients			    places	
-	  id			          inn			      id
-	  amount			      firstName			place
-	  currency			    lastName			
-	  card			        middleName			
-	  client_id						
-	  place_id						
+transactions (id, amount, currency, card, client_id, place_id)
+clients (inn, first_name, last_name, middle_name)
+places (id, place)
 
 Для использования пакетной вставки для id не используется автогенерация, кроме таблицы places, где используется SEQUENCE
 
