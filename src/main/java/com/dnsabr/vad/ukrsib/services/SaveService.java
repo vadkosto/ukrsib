@@ -55,15 +55,19 @@ public class SaveService implements Runnable {
                 boolean isCurrentTransactionDone=false;
                 for (int attempt=1; attempt<=attempts; attempt++) {
 
-                    if (store.isTerminated()) {
-                        break;
-                    }
-                    if (transactions.size()==transService.saveAll(transactions)) {
-                        logger.trace("В БД записано транзакций: "+ transactions.size());
-                        isCurrentTransactionDone = true;
-                        break;
-                    } else {
-                        logger.warn("Не удалась загрузка в базу данных при попытке "+attempt+" из "+attempts);
+                    try {
+                        if (store.isTerminated()) {
+                            break;
+                        }
+                        if (transactions.size()==transService.saveAll(transactions)) {
+                            logger.trace("В БД записано транзакций: "+ transactions.size());
+                            isCurrentTransactionDone = true;
+                            break;
+                        } else {
+                            logger.warn("Не удалась загрузка в базу данных при попытке "+attempt+" из "+attempts);
+                        }
+                    } catch (Exception e) {
+                        logger.warn("Не удалась загрузка в базу данных при попытке " + attempt + " из " + attempts);
                     }
                 }
 
