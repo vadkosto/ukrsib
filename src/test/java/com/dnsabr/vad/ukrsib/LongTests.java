@@ -200,7 +200,7 @@ public class LongTests {
             Place placeExpected = placesExpected.get(placeName);
             Place placeActual = entityManager.unwrap(Session.class).bySimpleNaturalId(Place.class).load(placeName);
             if (null==placeActual) {
-                logger.error("Клиент не добавлен в БД: "+ placeExpected);
+                logger.error("Место не добавлено в БД: "+ placeExpected);
             } else {
                 Assert.isTrue(placeExpected.deepEquals(placeActual),"Места не совпадают!\n"
                         +"\nожидаемое: "+placeExpected + "актуальное:"+placeActual);
