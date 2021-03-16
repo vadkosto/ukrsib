@@ -85,7 +85,7 @@ public class LongTests {
         jdbcTemplate.execute("DELETE FROM transactions WHERE id>0;");
         jdbcTemplate.execute("DELETE FROM clients WHERE inn>0;");
         jdbcTemplate.execute("DELETE FROM places WHERE id>0;");
-
+        jdbcTemplate.execute("commit;");
         ReflectionTestUtils.invokeMethod(StoreService.class,"doTerminate");
         ReflectionTestUtils.setField(StoreService.class, "parserDone", false);
         ReflectionTestUtils.setField(StoreService.class, "terminated", false);
@@ -121,6 +121,13 @@ public class LongTests {
     @Transactional
     @Commit
     public void addHugeAmountOfRowsLongTest() {
+        
+        // Очистка кэш 2-го уровня и entityManager
+        cacheManager.getCacheNames().forEach(cache->cacheManager.getCache(cache).clear());
+        entityManager.clear();
+        try {
+            Thread.sleep(4000);
+        } catch (InterruptedException e) {/*пустое*/}
 
         Logger logger = LoggerFactory.getLogger(this.getClass());
         StopWatch watch = new StopWatch();
