@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.Assert;
 import java.math.BigDecimal;
@@ -20,6 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Unit-тесты StoreService
  */
 @RunWith(JUnit4.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class StoreServiceUnitTests {
 
     private StoreService store = new StoreService();

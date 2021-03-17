@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -27,7 +28,7 @@ import static org.junit.Assert.assertThrows;
 @RunWith(SpringRunner.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @SpringBootTest
-@ActiveProfiles({"default"})
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class MainServiceTests {
 
     @Autowired
@@ -86,7 +87,7 @@ public class MainServiceTests {
         Thread main = new Thread(() -> mainService.start());
         main.start();
         try {
-            TimeUnit.SECONDS.sleep(2);
+            TimeUnit.MILLISECONDS.sleep(1500);
         } catch (InterruptedException e) {/*пустое*/}
 
         // Останавливаем основное приложение, чтобы успеть провести все проверки

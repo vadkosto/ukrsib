@@ -24,7 +24,6 @@ import java.util.concurrent.TimeUnit;
 @RunWith(SpringRunner.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @SpringBootTest
-@ActiveProfiles({"default"})
 public class QueryServiceTests {
 
     @Autowired

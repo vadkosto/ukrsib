@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.*;
 import org.springframework.stereotype.Service;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -34,6 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @ActiveProfiles({"mock"})
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class SaveServiceTests {
 
     @Value("${spring.jpa.properties.hibernate.jdbc.batch_size}")
@@ -176,7 +178,7 @@ public class SaveServiceTests {
         // Останавливаем хранилище и ждем немного
         ReflectionTestUtils.setField(store,"terminated", true);
         try {
-            TimeUnit.MILLISECONDS.sleep(100);
+            TimeUnit.MILLISECONDS.sleep(500);
         } catch (InterruptedException e) {/*пустое*/}
 
         Assert.isTrue(!saver.isAlive()

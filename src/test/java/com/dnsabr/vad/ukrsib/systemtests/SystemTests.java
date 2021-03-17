@@ -17,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.Commit;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -41,7 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RunWith(SpringRunner.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @SpringBootTest
-@ActiveProfiles({"default"})
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class SystemTests {
 
     @Autowired
@@ -60,6 +61,8 @@ public class SystemTests {
     private CacheManager cacheManager;
     @PersistenceContext
     private EntityManager entityManager;
+    @Autowired
+    private ParseService parseService;
 
     /**
      * Метод для выполнения действий перед каждым тестом класса
@@ -106,18 +109,7 @@ public class SystemTests {
      */
     @Test
     @Transactional
-    @Rollback
     public void dataAccuracyTest() {
-
-        // Очистка таблиц БД
-        truncateTables();
-
-        // Очистка кэш 2-го уровня и entityManager
-        cacheManager.getCacheNames().forEach(cache->cacheManager.getCache(cache).clear());
-        entityManager.clear();
-        try {
-            TimeUnit.SECONDS.sleep(4);
-        } catch (InterruptedException e) {/*пустое*/}
 
         // Запуск основного приложения
         mainService.start();
@@ -172,11 +164,9 @@ public class SystemTests {
      * все транзакции и соответствующие сообщения о принудительной остановке выводятся в консоль
      */
     @Test
-    @Transactional
-    @Rollback
     public void servicesStartsAndStopedOnDemandTest() {
 
-        truncateTables();
+        ReflectionTestUtils.setField(parseService,"fileName","Java_test_12000.xml");
 
         // Установка уровня логирования
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
@@ -187,7 +177,7 @@ public class SystemTests {
         // В отдельном потоке инициируем остановку приложения через несколько секунд
         (new Thread(() -> {
             try {
-                TimeUnit.MILLISECONDS.sleep(1000);
+                TimeUnit.MILLISECONDS.sleep(4000);
             } catch (InterruptedException e) {/*пустое*/}
             // Останавливаем хранилище - приложение должно завершиться
             ReflectionTestUtils.invokeMethod(store,"doTerminate");
@@ -219,9 +209,9 @@ public class SystemTests {
         Assert.isTrue(gotMessageSaveServiceStart,"Ни один поток сервиса сохранения данных в БД не запущен");
 
 
-        int parserCountExpected = 3000;
+        int parserCountExpected = 162000;
         int parserCountActual = ((Map<Long,Integer>) ReflectionTestUtils.getField(Trans.class,"transactions")).size();
-        long amountOfTransactionsExpected = 3000;
+        long amountOfTransactionsExpected = 162000;
         long amountOfTransactionsActual = jdbcTemplate.queryForObject("select count(*) from transactions;", Long.class);
 
 
@@ -237,18 +227,4 @@ public class SystemTests {
                         (gotMessageParseServiceFinish && gotMessageSaveServiceFinish && gotMessageMainServiceFinish)
                 ,"Приложение не было остановлено принудительно, но могло успеть отработать на мощном оборудовании");
     }
-
-
-    /**
-     * Очищает базу данных
-     */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @Commit
-    public void truncateTables() {
-        transRepository.deleteAllInBatch();
-        placeRepository.deleteAllInBatch();
-        clientRepository.deleteAllInBatch();
-
-    }
-
 }

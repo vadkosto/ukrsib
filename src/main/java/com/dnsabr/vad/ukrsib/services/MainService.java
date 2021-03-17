@@ -85,12 +85,11 @@ public class MainService {
         // Ожидание завершения работы всех сервисов
         while (!executor.isTerminated()) {
             try {
-                Thread.sleep(1000);
                 if (store.isTerminated()) {
                     executor.shutdownNow();
-                    Thread.currentThread().interrupt();
-                    break;
                 }
+                TimeUnit.SECONDS.sleep(1);
+
             } catch (InterruptedException e) {/*пустое*/}
         }
 

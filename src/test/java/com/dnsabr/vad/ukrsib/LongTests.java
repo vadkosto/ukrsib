@@ -17,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.Commit;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -42,11 +43,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @SpringBootTest
 @ActiveProfiles({"long"})
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class LongTests {
 
     // Установите значения количества транзакций, клиентов и мест для автогенерации
     private final static int amountOfTransactionsExpected = 163051;
-    private final static int amountOfClientsExpected = 100;
+    private final static int amountOfClientsExpected = 10000;
     private final static int amountOfPlacesExpected = 100;
     // ----------------------------------------------------------------------------
 
@@ -121,7 +123,7 @@ public class LongTests {
     @Transactional
     @Commit
     public void addHugeAmountOfRowsLongTest() {
-        
+
         // Очистка кэш 2-го уровня и entityManager
         cacheManager.getCacheNames().forEach(cache->cacheManager.getCache(cache).clear());
         entityManager.clear();

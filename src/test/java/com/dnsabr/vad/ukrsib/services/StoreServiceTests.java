@@ -13,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -30,6 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @ActiveProfiles({"mock"})
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class StoreServiceTests {
     @Value("${spring.jpa.properties.hibernate.jdbc.batch_size}")
     private int batchSize;
@@ -146,7 +148,7 @@ public class StoreServiceTests {
     @Test
     public void countErrorsBeforeShutdownTest() {
 
-        ReflectionTestUtils.setField(store,"countErrorsBeforeShutdown", new AtomicInteger(shutdownAfter-105));
+        ReflectionTestUtils.setField(store,"countErrorsBeforeShutdown", new AtomicInteger(shutdownAfter-5));
 
         List<Trans> list = new ArrayList<>(1);
         Client client = Client.newClient("Ivan","Ivanoff","Ivanoff","3030303030").orElse(null);
@@ -165,23 +167,9 @@ public class StoreServiceTests {
                 , "Счетчик неудачных пакетов не достиг ожидаемого значения!" +"\nожидаемое: "
                         +countErrorsBeforeShutdownExpected + "\nактуальное:"+countErrorsBeforeShutdownActual);
 
-        // Мини стресс-тест счетчика
-        for (Thread thread : new Thread[100]) {
-            (thread=new Thread(() -> store.addDueToError(list))).start();
-        }
-        try {
-            TimeUnit.MILLISECONDS.sleep(400);
-        } catch (InterruptedException e) {/*пустое*/}
-
-        countErrorsBeforeShutdownExpected += 100;
-        countErrorsBeforeShutdownActual = ((AtomicInteger) ReflectionTestUtils.getField(store,"countErrorsBeforeShutdown")).intValue();
-        Assert.isTrue(countErrorsBeforeShutdownActual>=countErrorsBeforeShutdownExpected
-                , "Счетчик неудачных пакетов не достиг ожидаемого значения!"+"\nожидаемое: "
-                        +countErrorsBeforeShutdownExpected + "\nактуальное:"+countErrorsBeforeShutdownActual);
-
         // Когда счетчик ошибок превышает допустимое установленное значение ошибок, хранилище закрывается
         // и прекращает принимать и выдавать данные
-        for (Thread thread : new Thread[20]) {
+        for (Thread thread : new Thread[10]) {
             (thread=new Thread(() -> store.addDueToError(list))).start();
         }
         try {
